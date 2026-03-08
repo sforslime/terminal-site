@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -54,6 +53,9 @@ var (
 	boldStyle   = lipgloss.NewStyle().Bold(true).Foreground(whiteHigh)
 	footerStyle = lipgloss.NewStyle().Foreground(subtle)
 
+	purple      = lipgloss.Color("#a855f7")
+	selectStyle = lipgloss.NewStyle().Foreground(purple).Bold(true)
+
 	navActive   = lipgloss.NewStyle().Foreground(accent).Bold(true)
 	navInactive = lipgloss.NewStyle().Foreground(white)
 )
@@ -71,17 +73,6 @@ c$$$cc$$$c   c$$"   $$$,     $$$ $$
 func viewHome(m Model) string {
 	const portraitWidth = 62 // 60 chars + 2 padding
 	rightWidth := m.width - portraitWidth
-
-	// --- Left: animated portrait (fixed clip at 26 lines) ---
-	portraitLines := strings.Split(m.frames[m.frameIndex], "\n")
-	if len(portraitLines) > 26 {
-		portraitLines = portraitLines[:26]
-	}
-	left := lipgloss.NewStyle().
-		Width(portraitWidth).
-		Height(m.height-1).
-		Padding(0, 1).
-		Render(strings.Join(portraitLines, "\n"))
 
 	// --- Right: logo + bio + nav ---
 	logo := renderLogoWithSnow(m.snow)
@@ -108,9 +99,19 @@ func viewHome(m Model) string {
 
 	right := lipgloss.NewStyle().
 		Width(rightWidth).
-		Height(m.height-1).
 		Padding(1, 2).
 		Render(rightContent)
+
+	// --- Left: portrait clipped to match right content height ---
+	rightLines := strings.Count(right, "\n") + 1
+	portraitLines := strings.Split(m.frames[m.frameIndex], "\n")
+	if len(portraitLines) > rightLines {
+		portraitLines = portraitLines[:rightLines]
+	}
+	left := lipgloss.NewStyle().
+		Width(portraitWidth).
+		Padding(0, 1).
+		Render(strings.Join(portraitLines, "\n"))
 
 	body := lipgloss.JoinHorizontal(lipgloss.Top, left, right)
 
@@ -137,42 +138,122 @@ func viewCreations(m Model) string {
 	header := boldStyle.Render("Creations") + "\n" +
 		accentStyle.Render(strings.Repeat("─", 30)) + "\n\n"
 
-	body := m.list.View()
-	footer := footerStyle.Render("\nesc go back • q quit")
+	// group by category
+	seen := map[string]bool{}
+	var body strings.Builder
+	for i, c := range allCreations {
+		if !seen[c.Category] {
+			if len(seen) > 0 {
+				body.WriteString("\n")
+			}
+			body.WriteString(subtleStyle.Render(c.Category) + "\n")
+			seen[c.Category] = true
+		}
+		if i == m.creationIndex {
+			body.WriteString(selectStyle.Render("  ✦ "+c.Title) + "\n")
+		} else {
+			body.WriteString(subtleStyle.Render("    "+c.Title) + "\n")
+		}
+	}
 
-	return lipgloss.NewStyle().Padding(1, 2).Render(header + body + footer)
+	footer := footerStyle.Render("\n↑/↓ navigate • enter open • esc back")
+	return lipgloss.NewStyle().Padding(1, 2).Render(header + body.String() + footer)
+}
+
+func viewCreationDetail(m Model) string {
+	c := allCreations[m.creationIndex]
+
+	header := boldStyle.Render(c.Title) + "\n" +
+		accentStyle.Render(strings.Repeat("─", 30)) + "\n\n"
+
+	category := subtleStyle.Render(c.Category) + "\n\n"
+	desc := bodyStyle.Render(c.Desc) + "\n\n"
+	detail := bodyStyle.Render(c.Detail)
+
+	url := ""
+	if c.URL != "" {
+		url = "\n\n" + accentStyle.Render("→ "+c.URL)
+	}
+
+	footer := footerStyle.Render("\n\nesc go back")
+	return lipgloss.NewStyle().Padding(1, 2).Render(header + category + desc + detail + url + footer)
 }
 
 var lightningFrames = []string{
-	"  ⚡️  ",
-	"  ⚡️  \n   |  ",
-	"  ⚡️  \n   |  \n   |  ",
-	"      ",
-	"  ⚡️  ",
-	"      ",
+	// dim — dots
+	"    ....\n" +
+		"   ..\n" +
+		"  ..\n" +
+		" ......\n" +
+		"   ..\n" +
+		"    ..\n" +
+		"     .",
+	// medium — plus
+	"    ++++\n" +
+		"   ++\n" +
+		"  ++\n" +
+		" ++++++\n" +
+		"   ++\n" +
+		"    ++\n" +
+		"     +",
+	// bright — stars
+	"    ****\n" +
+		"   **\n" +
+		"  **\n" +
+		" ******\n" +
+		"   **\n" +
+		"    **\n" +
+		"     *",
+	// flash — hash
+	"    ####\n" +
+		"   ##\n" +
+		"  ##\n" +
+		" ######\n" +
+		"   ##\n" +
+		"    ##\n" +
+		"     #",
 }
 
 func viewReflections(m Model) string {
 	header := boldStyle.Render("Reflections") + "\n" +
 		accentStyle.Render(strings.Repeat("─", 30)) + "\n\n"
 
-	thoughts := []string{
-		"→ building in public is underrated",
-		"→ terminals are timeless",
-		"→ simplicity beats complexity, always",
+	var body strings.Builder
+	for i, r := range allReflections {
+		if i == m.reflectionIndex {
+			body.WriteString(selectStyle.Render("  ✦ "+r.Title) + "\n")
+		} else {
+			body.WriteString(subtleStyle.Render("    "+r.Title) + "\n")
+		}
 	}
 
-	body := bodyStyle.Render(strings.Join(thoughts, "\n"))
-	footer := footerStyle.Render("\nesc go back • q quit")
+	footer := footerStyle.Render("\n↑/↓ navigate • enter open • esc back")
 
 	bolt := accentStyle.Render(lightningFrames[m.frameIndex%len(lightningFrames)])
 
-	left := lipgloss.NewStyle().Width(40).Render(header + body + footer)
+	left := lipgloss.NewStyle().Width(46).Render(header + body.String() + footer)
 	right := lipgloss.NewStyle().Padding(1, 8).Render(bolt)
 
 	return lipgloss.NewStyle().Padding(1, 2).Render(
 		lipgloss.JoinHorizontal(lipgloss.Top, left, right),
 	)
+}
+
+func viewReflectionDetail(m Model) string {
+	r := allReflections[m.reflectionIndex]
+
+	header := boldStyle.Render(r.Title) + "\n" +
+		accentStyle.Render(strings.Repeat("─", 30)) + "\n\n"
+
+	detail := bodyStyle.Render(r.Detail)
+
+	url := ""
+	if r.URL != "" {
+		url = "\n\n" + accentStyle.Render("→ "+r.URL)
+	}
+
+	footer := footerStyle.Render("\n\nesc go back")
+	return lipgloss.NewStyle().Padding(1, 2).Render(header + detail + url + footer)
 }
 
 
@@ -232,26 +313,3 @@ func viewContacts(m Model) string {
 
 // project list
 
-type project struct {
-	title, desc string
-}
-
-func (p project) Title() string       { return p.title }
-func (p project) Description() string { return p.desc }
-func (p project) FilterValue() string { return p.title }
-
-func newProjectList() list.Model {
-	projects := []list.Item{
-		project{"ssh-portfolio", "this terminal — built with Bubble Tea + Wish"},
-		project{"web scraper", "a scraper - built with Selenium + Python"},
-		project{"project three", "keep building"},
-	}
-
-	l := list.New(projects, list.NewDefaultDelegate(), 60, 10)
-	l.Title = ""
-	l.SetShowHelp(false)
-	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(false)
-	l.Styles.Title = lipgloss.NewStyle()
-	return l
-}

@@ -159,7 +159,42 @@ func viewReflections(_ Model) string {
 	return lipgloss.NewStyle().Padding(1, 2).Render(header + body + footer)
 }
 
-func viewContacts(_ Model) string {
+var starFrames = []string{
+	// dim
+	"    .    \n" +
+		"   . .   \n" +
+		"  . + .  \n" +
+		" .  *  . \n" +
+		"  . + .  \n" +
+		"   . .   \n" +
+		"    .    ",
+	// medium
+	"    +    \n" +
+		"   +*+   \n" +
+		"  + * +  \n" +
+		" +--*--+ \n" +
+		"  + * +  \n" +
+		"   +*+   \n" +
+		"    +    ",
+	// bright
+	"    *    \n" +
+		"   *|*   \n" +
+		" *--+--* \n" +
+		"*--[*]--*\n" +
+		" *--+--* \n" +
+		"   *|*   \n" +
+		"    *    ",
+	// medium (reverse)
+	"    +    \n" +
+		"   +*+   \n" +
+		"  + * +  \n" +
+		" +--*--+ \n" +
+		"  + * +  \n" +
+		"   +*+   \n" +
+		"    +    ",
+}
+
+func viewContacts(m Model) string {
 	header := boldStyle.Render("Contacts") + "\n" +
 		accentStyle.Render(strings.Repeat("─", 30)) + "\n\n"
 
@@ -172,7 +207,14 @@ func viewContacts(_ Model) string {
 
 	footer := footerStyle.Render("\nesc go back • q quit")
 
-	return lipgloss.NewStyle().Padding(1, 2).Render(header + links + footer)
+	star := accentStyle.Render(starFrames[m.frameIndex%len(starFrames)])
+
+	left := lipgloss.NewStyle().Width(40).Render(header + links + footer)
+	right := lipgloss.NewStyle().Padding(2, 4).Render(star)
+
+	return lipgloss.NewStyle().Padding(1, 2).Render(
+		lipgloss.JoinHorizontal(lipgloss.Top, left, right),
+	)
 }
 
 // project list

@@ -159,78 +159,6 @@ func viewReflections(_ Model) string {
 	return lipgloss.NewStyle().Padding(1, 2).Render(header + body + footer)
 }
 
-// Each frame uses slightly different dot characters for the flashing effect.
-// Shape is a 5-pointed star made of dense dot characters, like the reference image.
-var starFrames = []string{
-	// frame 0 — dots
-	"             .            \n" +
-		"            ...           \n" +
-		"           .....          \n" +
-		"          .......         \n" +
-		"         .........        \n" +
-		"...........................\n" +
-		" ..........................\n" +
-		"  ........................ \n" +
-		"    ....................   \n" +
-		"      ................     \n" +
-		"       ...    ....         \n" +
-		"      ...      ....        \n" +
-		"     ...        ....       \n" +
-		"    ...          ....      \n" +
-		"   ...            ...      \n" +
-		"  ..               ..      ",
-	// frame 1 — commas
-	"             ,            \n" +
-		"            ,,,           \n" +
-		"           ,,,,,          \n" +
-		"          ,,,,,,,         \n" +
-		"         ,,,,,,,,,        \n" +
-		",,,,,,,,,,,,,,,,,,,,,,,,,,,\n" +
-		" ,,,,,,,,,,,,,,,,,,,,,,,,, \n" +
-		"  ,,,,,,,,,,,,,,,,,,,,,,,  \n" +
-		"    ,,,,,,,,,,,,,,,,,,,    \n" +
-		"      ,,,,,,,,,,,,,,,      \n" +
-		"       ,,,    ,,,,         \n" +
-		"      ,,,      ,,,,        \n" +
-		"     ,,,        ,,,,       \n" +
-		"    ,,,          ,,,,      \n" +
-		"   ,,,            ,,,      \n" +
-		"  ,,               ,,      ",
-	// frame 2 — colons (brighter)
-	"             :            \n" +
-		"            :::           \n" +
-		"           :::::          \n" +
-		"          :::::::         \n" +
-		"         :::::::::        \n" +
-		":::::::::::::::::::::::::::\n" +
-		" ::::::::::::::::::::::::  \n" +
-		"  ::::::::::::::::::::::   \n" +
-		"    ::::::::::::::::::     \n" +
-		"      ::::::::::::::       \n" +
-		"       :::    ::::         \n" +
-		"      :::      ::::        \n" +
-		"     :::        ::::       \n" +
-		"    :::          ::::      \n" +
-		"   :::            :::      \n" +
-		"  ::               ::      ",
-	// frame 3 — semicolons
-	"             ;            \n" +
-		"            ;;;           \n" +
-		"           ;;;;;          \n" +
-		"          ;;;;;;;         \n" +
-		"         ;;;;;;;;;        \n" +
-		";;;;;;;;;;;;;;;;;;;;;;;;;;;\n" +
-		" ;;;;;;;;;;;;;;;;;;;;;;;;;  \n" +
-		"  ;;;;;;;;;;;;;;;;;;;;;;;   \n" +
-		"    ;;;;;;;;;;;;;;;;;;;     \n" +
-		"      ;;;;;;;;;;;;;         \n" +
-		"       ;;;    ;;;;          \n" +
-		"      ;;;      ;;;;         \n" +
-		"     ;;;        ;;;;        \n" +
-		"    ;;;          ;;;;       \n" +
-		"   ;;;            ;;;       \n" +
-		"  ;;               ;;       ",
-}
 
 func viewContacts(m Model) string {
 	header := boldStyle.Render("Contacts") + "\n" +
@@ -245,7 +173,17 @@ func viewContacts(m Model) string {
 
 	footer := footerStyle.Render("\nesc go back • q quit")
 
-	star := accentStyle.Render(starFrames[m.frameIndex%len(starFrames)])
+	starLines := strings.Split(m.star, "\n")
+	// show the middle section where the star's arms are visible
+	start := 8
+	end := 24
+	if end > len(starLines) {
+		end = len(starLines)
+	}
+	if start > len(starLines) {
+		start = 0
+	}
+	star := accentStyle.Render(strings.Join(starLines[start:end], "\n"))
 
 	left := lipgloss.NewStyle().Width(36).Render(header + links + footer)
 	right := lipgloss.NewStyle().Padding(1, 8).Render(star)

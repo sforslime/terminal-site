@@ -2,7 +2,6 @@ package tui
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -48,12 +47,12 @@ var (
 	white     = lipgloss.Color("#e8e8e8")
 	whiteHigh = lipgloss.Color("#ffffff")
 
-	accentStyle  = lipgloss.NewStyle().Foreground(accent)
-	subtleStyle  = lipgloss.NewStyle().Foreground(subtle)
-	dimStyle     = lipgloss.NewStyle().Foreground(dim)
-	bodyStyle    = lipgloss.NewStyle().Foreground(white)
-	boldStyle    = lipgloss.NewStyle().Bold(true).Foreground(whiteHigh)
-	footerStyle  = lipgloss.NewStyle().Foreground(subtle)
+	accentStyle = lipgloss.NewStyle().Foreground(accent)
+	subtleStyle = lipgloss.NewStyle().Foreground(subtle)
+	dimStyle    = lipgloss.NewStyle().Foreground(dim)
+	bodyStyle   = lipgloss.NewStyle().Foreground(white)
+	boldStyle   = lipgloss.NewStyle().Bold(true).Foreground(whiteHigh)
+	footerStyle = lipgloss.NewStyle().Foreground(subtle)
 
 	navActive   = lipgloss.NewStyle().Foreground(accent).Bold(true)
 	navInactive = lipgloss.NewStyle().Foreground(white)
@@ -68,27 +67,19 @@ c$$$cc$$$c   c$$"   $$$,     $$$ $$
  YMM   "` + "`" + `mM"         "YMMMMMP"  MM
 `
 
-func loadPortrait() string {
-	data, err := os.ReadFile("ascii/portrait.txt")
-	if err != nil {
-		return ""
-	}
-	return string(data)
-}
 
 func viewHome(m Model) string {
 	const portraitWidth = 62 // 60 chars + 2 padding
 	rightWidth := m.width - portraitWidth
 
-	// --- Left: portrait (fixed clip at 35 lines) ---
-	portrait := loadPortrait()
-	portraitLines := strings.Split(portrait, "\n")
-	if len(portraitLines) > 35 {
-		portraitLines = portraitLines[:35]
+	// --- Left: animated portrait (fixed clip at 26 lines) ---
+	portraitLines := strings.Split(m.frames[m.frameIndex], "\n")
+	if len(portraitLines) > 26 {
+		portraitLines = portraitLines[:26]
 	}
 	left := lipgloss.NewStyle().
 		Width(portraitWidth).
-		Height(m.height - 1).
+		Height(m.height-1).
 		Padding(0, 1).
 		Render(strings.Join(portraitLines, "\n"))
 
@@ -96,11 +87,11 @@ func viewHome(m Model) string {
 	logo := renderLogoWithSnow(m.snow)
 
 	bioPrimary := boldStyle.Render(
-		"is a creator & storyteller on the internet,\nbuilding cool products,\ndocumenting life & reflecting on how\ntechnology shapes our humanity.",
+		"is a computer science major & creator on the internet,\nbuilding cool software, documenting life & reflecting\non how technology shapes our humanity.",
 	)
 
 	bioSecondary := "\n\n" + boldStyle.Render(
-		"AYO also works as a builder & maker,\ncreating things people actually use.",
+		"AYO also works as a developer & engineer,\ncreating things people actually use.",
 	)
 
 	bioFaded := "\n\n" + subtleStyle.Render(
@@ -117,7 +108,7 @@ func viewHome(m Model) string {
 
 	right := lipgloss.NewStyle().
 		Width(rightWidth).
-		Height(m.height - 1).
+		Height(m.height-1).
 		Padding(1, 2).
 		Render(rightContent)
 
@@ -174,9 +165,9 @@ func viewContacts(_ Model) string {
 
 	links := fmt.Sprintf(
 		"%s  https://www.github.com/sforslime\n%s  https://www.x.com/sforslime\n%s  https://www.instagram.com/yourstruly.ayo/",
-		accentStyle.Render("gh"),
-		accentStyle.Render("tw"),
-		accentStyle.Render("@"),
+		accentStyle.Render("Github"),
+		accentStyle.Render("X"),
+		accentStyle.Render("Instagram"),
 	)
 
 	footer := footerStyle.Render("\nesc go back • q quit")
@@ -197,7 +188,7 @@ func (p project) FilterValue() string { return p.title }
 func newProjectList() list.Model {
 	projects := []list.Item{
 		project{"ssh-portfolio", "this terminal — built with Bubble Tea + Wish"},
-		project{"project two", "add your projects here"},
+		project{"web scraper", "a scraper - built with Selenium + Python"},
 		project{"project three", "keep building"},
 	}
 

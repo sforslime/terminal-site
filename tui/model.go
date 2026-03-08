@@ -2,6 +2,10 @@ package tui
 
 import (
 	"math/rand"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -32,7 +36,7 @@ var snowChars = []rune{'*', '.', '\'', ',', '+', '·'}
 type tickMsg time.Time
 
 func doTick() tea.Cmd {
-	return tea.Tick(120*time.Millisecond, func(t time.Time) tea.Msg {
+	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
 }
@@ -68,13 +72,49 @@ func tickSnow(snow []snowflake) []snowflake {
 	return next
 }
 
+// loadFrames reads all .txt files from ascii/frames/ sorted by filename.
+// Falls back to the static portrait if no frames exist.
+func loadFrames() []string {
+	entries, err := os.ReadDir("ascii/frames")
+	if err != nil || len(entries) == 0 {
+		// fall back to static portrait
+		data, err := os.ReadFile("ascii/portrait.txt")
+		if err != nil {
+			return []string{"[ no portrait ]"}
+		}
+		return []string{string(data)}
+	}
+
+	var names []string
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), ".txt") {
+			names = append(names, e.Name())
+		}
+	}
+	sort.Strings(names)
+
+	frames := make([]string, 0, len(names))
+	for _, name := range names {
+		data, err := os.ReadFile(filepath.Join("ascii/frames", name))
+		if err == nil {
+			frames = append(frames, string(data))
+		}
+	}
+	if len(frames) == 0 {
+		return []string{"[ no frames ]"}
+	}
+	return frames
+}
+
 type Model struct {
-	screen   screen
-	navIndex int
-	width    int
-	height   int
-	list     list.Model
-	snow     []snowflake
+	screen     screen
+	navIndex   int
+	width      int
+	height     int
+	list       list.Model
+	snow       []snowflake
+	frames     []string
+	frameIndex int
 }
 
 func NewModel(width, height int) Model {
@@ -84,6 +124,7 @@ func NewModel(width, height int) Model {
 		height: height,
 		list:   newProjectList(),
 		snow:   initSnow(),
+		frames: loadFrames(),
 	}
 }
 
@@ -95,6 +136,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tickMsg:
 		m.snow = tickSnow(m.snow)
+		m.frameIndex = (m.frameIndex + 1) % len(m.frames)
 		return m, doTick()
 
 	case tea.WindowSizeMsg:

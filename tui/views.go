@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -67,10 +68,33 @@ c$$$cc$$$c   c$$"   $$$,     $$$ $$
  YMM   "` + "`" + `mM"         "YMMMMMP"  MM
 `
 
+func loadPortrait() string {
+	data, err := os.ReadFile("ascii/portrait.txt")
+	if err != nil {
+		return ""
+	}
+	return string(data)
+}
+
 func viewHome(m Model) string {
+	const portraitWidth = 62 // 60 chars + 2 padding
+	rightWidth := m.width - portraitWidth
+
+	// --- Left: portrait (fixed clip at 35 lines) ---
+	portrait := loadPortrait()
+	portraitLines := strings.Split(portrait, "\n")
+	if len(portraitLines) > 35 {
+		portraitLines = portraitLines[:35]
+	}
+	left := lipgloss.NewStyle().
+		Width(portraitWidth).
+		Height(m.height - 1).
+		Padding(0, 1).
+		Render(strings.Join(portraitLines, "\n"))
+
+	// --- Right: logo + bio + nav ---
 	logo := renderLogoWithSnow(m.snow)
 
-	// Bio paragraphs
 	bioPrimary := boldStyle.Render(
 		"is a creator & storyteller on the internet,\nbuilding cool products,\ndocumenting life & reflecting on how\ntechnology shapes our humanity.",
 	)
@@ -85,24 +109,25 @@ func viewHome(m Model) string {
 
 	explore := "\n\n" + dimStyle.Render("Explore the directories below ↓")
 
-	// Horizontal nav
 	nav := buildNav(m.navIndex)
 
-	content := logo +
+	rightContent := logo +
 		bioPrimary + bioSecondary + bioFaded + explore +
 		"\n\n" + nav
 
-	main := lipgloss.NewStyle().
-		Width(m.width).
+	right := lipgloss.NewStyle().
+		Width(rightWidth).
 		Height(m.height - 1).
-		Padding(1, 4).
-		Render(content)
+		Padding(1, 2).
+		Render(rightContent)
+
+	body := lipgloss.JoinHorizontal(lipgloss.Top, left, right)
 
 	footer := footerStyle.Width(m.width).Render(
 		"[← → to select · enter to open · q to quit]",
 	)
 
-	return lipgloss.JoinVertical(lipgloss.Left, main, footer)
+	return lipgloss.JoinVertical(lipgloss.Left, body, footer)
 }
 
 func buildNav(selected int) string {

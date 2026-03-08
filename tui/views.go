@@ -8,6 +8,38 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var snowStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff"))
+
+func renderLogoWithSnow(snow []snowflake) string {
+	logoLines := strings.Split(nameLogo, "\n")
+
+	// build snow lookup: (col, row) -> char
+	flakeMap := make(map[[2]int]rune, len(snow))
+	for _, f := range snow {
+		flakeMap[[2]int{f.x, f.y}] = f.ch
+	}
+
+	var sb strings.Builder
+	for row, line := range logoLines {
+		runes := []rune(line)
+		for col := 0; col < snowW; col++ {
+			var ch rune = ' '
+			if col < len(runes) {
+				ch = runes[col]
+			}
+			if ch != ' ' {
+				sb.WriteString(accentStyle.Render(string(ch)))
+			} else if flake, ok := flakeMap[[2]int{col, row}]; ok {
+				sb.WriteString(snowStyle.Render(string(flake)))
+			} else {
+				sb.WriteRune(' ')
+			}
+		}
+		sb.WriteRune('\n')
+	}
+	return sb.String()
+}
+
 var (
 	accent    = lipgloss.Color("#4ecdc4")
 	subtle    = lipgloss.Color("#444444")
@@ -27,18 +59,16 @@ var (
 )
 
 const nameLogo = `
- /--\_/\_/=77
-/___\_/ /_//
+  :::.  .-:.     ::-.   ...      .:
+  ;;` + "`" + `;;  ';;.   ;;;;'.;;;;;;;.  ;;;
+ ,[[ '[[,  '[[,[[[' ,[[     \[[,'[[
+c$$$cc$$$c   c$$"   $$$,     $$$ $$
+ 888   888,,8P"` + "`" + `    "888,_ _,88P ""
+ YMM   "` + "`" + `mM"         "YMMMMMP"  MM
 `
 
 func viewHome(m Model) string {
-	// Stars + name logo
-	stars := accentStyle.Render("*") + "  " + bodyStyle.Render(".") + "\n" +
-		"  " + bodyStyle.Render("*") + "\n"
-
-	logo := accentStyle.Render(nameLogo)
-
-	starBelow := "\n  " + accentStyle.Render("*") + "\n\n"
+	logo := renderLogoWithSnow(m.snow)
 
 	// Bio paragraphs
 	bioPrimary := boldStyle.Render(
@@ -58,7 +88,7 @@ func viewHome(m Model) string {
 	// Horizontal nav
 	nav := buildNav(m.navIndex)
 
-	content := stars + logo + starBelow +
+	content := logo +
 		bioPrimary + bioSecondary + bioFaded + explore +
 		"\n\n" + nav
 

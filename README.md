@@ -3,6 +3,10 @@
 An interactive terminal portfolio accessible over SSH. Visitors connect and land in a full TUI — animated ASCII portrait, bio, navigable sections — no browser required.
 
 
+https://github.com/user-attachments/assets/89ec764b-4f00-4b45-85f5-39c0b6032708
+
+
+
 No ssh domain yet though😔
 
 

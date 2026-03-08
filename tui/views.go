@@ -159,39 +159,77 @@ func viewReflections(_ Model) string {
 	return lipgloss.NewStyle().Padding(1, 2).Render(header + body + footer)
 }
 
+// Each frame uses slightly different dot characters for the flashing effect.
+// Shape is a 5-pointed star made of dense dot characters, like the reference image.
 var starFrames = []string{
-	// dim
-	"    .    \n" +
-		"   . .   \n" +
-		"  . + .  \n" +
-		" .  *  . \n" +
-		"  . + .  \n" +
-		"   . .   \n" +
-		"    .    ",
-	// medium
-	"    +    \n" +
-		"   +*+   \n" +
-		"  + * +  \n" +
-		" +--*--+ \n" +
-		"  + * +  \n" +
-		"   +*+   \n" +
-		"    +    ",
-	// bright
-	"    *    \n" +
-		"   *|*   \n" +
-		" *--+--* \n" +
-		"*--[*]--*\n" +
-		" *--+--* \n" +
-		"   *|*   \n" +
-		"    *    ",
-	// medium (reverse)
-	"    +    \n" +
-		"   +*+   \n" +
-		"  + * +  \n" +
-		" +--*--+ \n" +
-		"  + * +  \n" +
-		"   +*+   \n" +
-		"    +    ",
+	// frame 0 — dots
+	"             .            \n" +
+		"            ...           \n" +
+		"           .....          \n" +
+		"          .......         \n" +
+		"         .........        \n" +
+		"...........................\n" +
+		" ..........................\n" +
+		"  ........................ \n" +
+		"    ....................   \n" +
+		"      ................     \n" +
+		"       ...    ....         \n" +
+		"      ...      ....        \n" +
+		"     ...        ....       \n" +
+		"    ...          ....      \n" +
+		"   ...            ...      \n" +
+		"  ..               ..      ",
+	// frame 1 — commas
+	"             ,            \n" +
+		"            ,,,           \n" +
+		"           ,,,,,          \n" +
+		"          ,,,,,,,         \n" +
+		"         ,,,,,,,,,        \n" +
+		",,,,,,,,,,,,,,,,,,,,,,,,,,,\n" +
+		" ,,,,,,,,,,,,,,,,,,,,,,,,, \n" +
+		"  ,,,,,,,,,,,,,,,,,,,,,,,  \n" +
+		"    ,,,,,,,,,,,,,,,,,,,    \n" +
+		"      ,,,,,,,,,,,,,,,      \n" +
+		"       ,,,    ,,,,         \n" +
+		"      ,,,      ,,,,        \n" +
+		"     ,,,        ,,,,       \n" +
+		"    ,,,          ,,,,      \n" +
+		"   ,,,            ,,,      \n" +
+		"  ,,               ,,      ",
+	// frame 2 — colons (brighter)
+	"             :            \n" +
+		"            :::           \n" +
+		"           :::::          \n" +
+		"          :::::::         \n" +
+		"         :::::::::        \n" +
+		":::::::::::::::::::::::::::\n" +
+		" ::::::::::::::::::::::::  \n" +
+		"  ::::::::::::::::::::::   \n" +
+		"    ::::::::::::::::::     \n" +
+		"      ::::::::::::::       \n" +
+		"       :::    ::::         \n" +
+		"      :::      ::::        \n" +
+		"     :::        ::::       \n" +
+		"    :::          ::::      \n" +
+		"   :::            :::      \n" +
+		"  ::               ::      ",
+	// frame 3 — semicolons
+	"             ;            \n" +
+		"            ;;;           \n" +
+		"           ;;;;;          \n" +
+		"          ;;;;;;;         \n" +
+		"         ;;;;;;;;;        \n" +
+		";;;;;;;;;;;;;;;;;;;;;;;;;;;\n" +
+		" ;;;;;;;;;;;;;;;;;;;;;;;;;  \n" +
+		"  ;;;;;;;;;;;;;;;;;;;;;;;   \n" +
+		"    ;;;;;;;;;;;;;;;;;;;     \n" +
+		"      ;;;;;;;;;;;;;         \n" +
+		"       ;;;    ;;;;          \n" +
+		"      ;;;      ;;;;         \n" +
+		"     ;;;        ;;;;        \n" +
+		"    ;;;          ;;;;       \n" +
+		"   ;;;            ;;;       \n" +
+		"  ;;               ;;       ",
 }
 
 func viewContacts(m Model) string {
@@ -199,9 +237,9 @@ func viewContacts(m Model) string {
 		accentStyle.Render(strings.Repeat("─", 30)) + "\n\n"
 
 	links := fmt.Sprintf(
-		"%s  https://www.github.com/sforslime\n%s  https://www.x.com/sforslime\n%s  https://www.instagram.com/yourstruly.ayo/",
-		accentStyle.Render("Github"),
-		accentStyle.Render("X"),
+		"%s  github.com/sforslime\n%s  x.com/sforslime\n%s  instagram.com/yourstruly.ayo",
+		accentStyle.Render("Github   "),
+		accentStyle.Render("X        "),
 		accentStyle.Render("Instagram"),
 	)
 
@@ -209,8 +247,8 @@ func viewContacts(m Model) string {
 
 	star := accentStyle.Render(starFrames[m.frameIndex%len(starFrames)])
 
-	left := lipgloss.NewStyle().Width(40).Render(header + links + footer)
-	right := lipgloss.NewStyle().Padding(2, 4).Render(star)
+	left := lipgloss.NewStyle().Width(36).Render(header + links + footer)
+	right := lipgloss.NewStyle().Padding(1, 8).Render(star)
 
 	return lipgloss.NewStyle().Padding(1, 2).Render(
 		lipgloss.JoinHorizontal(lipgloss.Top, left, right),

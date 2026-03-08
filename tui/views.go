@@ -143,7 +143,16 @@ func viewCreations(m Model) string {
 	return lipgloss.NewStyle().Padding(1, 2).Render(header + body + footer)
 }
 
-func viewReflections(_ Model) string {
+var lightningFrames = []string{
+	"  ⚡️  ",
+	"  ⚡️  \n   |  ",
+	"  ⚡️  \n   |  \n   |  ",
+	"      ",
+	"  ⚡️  ",
+	"      ",
+}
+
+func viewReflections(m Model) string {
 	header := boldStyle.Render("Reflections") + "\n" +
 		accentStyle.Render(strings.Repeat("─", 30)) + "\n\n"
 
@@ -156,9 +165,47 @@ func viewReflections(_ Model) string {
 	body := bodyStyle.Render(strings.Join(thoughts, "\n"))
 	footer := footerStyle.Render("\nesc go back • q quit")
 
-	return lipgloss.NewStyle().Padding(1, 2).Render(header + body + footer)
+	bolt := accentStyle.Render(lightningFrames[m.frameIndex%len(lightningFrames)])
+
+	left := lipgloss.NewStyle().Width(40).Render(header + body + footer)
+	right := lipgloss.NewStyle().Padding(1, 8).Render(bolt)
+
+	return lipgloss.NewStyle().Padding(1, 2).Render(
+		lipgloss.JoinHorizontal(lipgloss.Top, left, right),
+	)
 }
 
+
+var contactStarFrames = []string{
+	"    .    \n" +
+		"    |    \n" +
+		"  . | .  \n" +
+		". --+-- .\n" +
+		"  ' | '  \n" +
+		"    |    \n" +
+		"    '    ",
+	"    *    \n" +
+		"    |    \n" +
+		"  * | *  \n" +
+		"* --+-- *\n" +
+		"  * | *  \n" +
+		"    |    \n" +
+		"    *    ",
+	"    ✦    \n" +
+		"    |    \n" +
+		"  ✦ | ✦  \n" +
+		"✦ --✦-- ✦\n" +
+		"  ✦ | ✦  \n" +
+		"    |    \n" +
+		"    ✦    ",
+	"    *    \n" +
+		"    |    \n" +
+		"  + | +  \n" +
+		"+ --*-- +\n" +
+		"  + | +  \n" +
+		"    |    \n" +
+		"    *    ",
+}
 
 func viewContacts(m Model) string {
 	header := boldStyle.Render("Contacts") + "\n" +
@@ -173,17 +220,7 @@ func viewContacts(m Model) string {
 
 	footer := footerStyle.Render("\nesc go back • q quit")
 
-	starLines := strings.Split(m.star, "\n")
-	// show the middle section where the star's arms are visible
-	start := 8
-	end := 24
-	if end > len(starLines) {
-		end = len(starLines)
-	}
-	if start > len(starLines) {
-		start = 0
-	}
-	star := accentStyle.Render(strings.Join(starLines[start:end], "\n"))
+	star := accentStyle.Render(contactStarFrames[m.frameIndex%len(contactStarFrames)])
 
 	left := lipgloss.NewStyle().Width(36).Render(header + links + footer)
 	right := lipgloss.NewStyle().Padding(1, 8).Render(star)

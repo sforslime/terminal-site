@@ -72,30 +72,6 @@ func tickSnow(snow []snowflake) []snowflake {
 	return next
 }
 
-// flashStar randomly swaps ~8% of characters with similar alternatives to create a shimmer effect.
-func flashStar(base string) string {
-	swaps := map[rune][]rune{
-		'.': {',', '\'', '`'},
-		',': {'.', '\''},
-		'z': {'s', 'x', 'Z'},
-		'Z': {'X', 'Y', 'z'},
-		'X': {'Y', 'Z', 'x'},
-		'x': {'z', 'X'},
-		'[': {'{', '('},
-		']': {'}', ')'},
-		'{': {'[', '('},
-		'}': {']', ')'},
-		'v': {'u', 'w'},
-		'n': {'m', 'r'},
-	}
-	runes := []rune(base)
-	for i, r := range runes {
-		if alts, ok := swaps[r]; ok && rand.Float32() < 0.08 {
-			runes[i] = alts[rand.Intn(len(alts))]
-		}
-	}
-	return string(runes)
-}
 
 // loadFrames reads all .txt files from ascii/frames/ sorted by filename.
 // Falls back to the static portrait if no frames exist.
@@ -140,24 +116,16 @@ type Model struct {
 	snow       []snowflake
 	frames     []string
 	frameIndex int
-	starBase   string
-	star       string
 }
 
 func NewModel(width, height int) Model {
-	starBase := ""
-	if data, err := os.ReadFile("ascii/star.txt"); err == nil {
-		starBase = string(data)
-	}
 	return Model{
-		screen:   screenHome,
-		width:    width,
-		height:   height,
-		list:     newProjectList(),
-		snow:     initSnow(),
-		frames:   loadFrames(),
-		starBase: starBase,
-		star:     flashStar(starBase),
+		screen: screenHome,
+		width:  width,
+		height: height,
+		list:   newProjectList(),
+		snow:   initSnow(),
+		frames: loadFrames(),
 	}
 }
 
@@ -170,7 +138,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tickMsg:
 		m.snow = tickSnow(m.snow)
 		m.frameIndex = (m.frameIndex + 1) % len(m.frames)
-		m.star = flashStar(m.starBase)
 		return m, doTick()
 
 	case tea.WindowSizeMsg:

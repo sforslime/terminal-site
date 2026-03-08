@@ -44,14 +44,14 @@ var allCreations = []Creation{
 	},
 	{
 		Category: "Personal Projects",
-		Title:    "web scraper",
-		Desc:     "data scraper built with Selenium and Python",
-		Detail:   "Scrapes structured data from dynamic web pages.\nUses Selenium WebDriver with headless Chrome.\nOutputs clean JSON and CSV.",
+		Title:    "Local Airline web scraper",
+		Desc:     "Data scraper built with Selenium and Python",
+		Detail:   "Scrapes structured data from airline web pages.\nUses Selenium WebDriver with headless Chrome.\nOutputs clean JSON and CSV.",
 		URL:      "github.com/sforslime/web-scraper",
 	},
 	{
 		Category: "AI Research",
-		Title:    "project three",
+		Title:    "Algoverse Research",
 		Desc:     "add your project here",
 		Detail:   "Add more details about this project here.",
 		URL:      "",

@@ -48,18 +48,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 
-		case "up", "k":
+		case "left", "h":
 			if m.screen == screenHome {
 				if m.navIndex > 0 {
 					m.navIndex--
 				}
 			}
 
-		case "down", "j":
+		case "right", "l":
 			if m.screen == screenHome {
 				if m.navIndex < len(navItems)-1 {
 					m.navIndex++
 				}
+			}
+
+		case "up", "k":
+			if m.screen == screenCreations {
+				var cmd tea.Cmd
+				m.list, cmd = m.list.Update(msg)
+				return m, cmd
+			}
+
+		case "down", "j":
+			if m.screen == screenCreations {
+				var cmd tea.Cmd
+				m.list, cmd = m.list.Update(msg)
+				return m, cmd
 			}
 
 		case "enter":

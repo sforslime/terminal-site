@@ -10,54 +10,81 @@ import (
 
 var (
 	accent    = lipgloss.Color("#4ecdc4")
-	subtle    = lipgloss.Color("#555555")
-	highlight = lipgloss.Color("#ffffff")
+	subtle    = lipgloss.Color("#444444")
+	dim       = lipgloss.Color("#2a2a2a")
+	white     = lipgloss.Color("#e8e8e8")
+	whiteHigh = lipgloss.Color("#ffffff")
 
-	accentStyle = lipgloss.NewStyle().Foreground(accent)
-	subtleStyle = lipgloss.NewStyle().Foreground(subtle)
-	boldStyle   = lipgloss.NewStyle().Bold(true).Foreground(highlight)
+	accentStyle  = lipgloss.NewStyle().Foreground(accent)
+	subtleStyle  = lipgloss.NewStyle().Foreground(subtle)
+	dimStyle     = lipgloss.NewStyle().Foreground(dim)
+	bodyStyle    = lipgloss.NewStyle().Foreground(white)
+	boldStyle    = lipgloss.NewStyle().Bold(true).Foreground(whiteHigh)
+	footerStyle  = lipgloss.NewStyle().Foreground(subtle)
 
-	navNormal   = lipgloss.NewStyle().Foreground(subtle).PaddingLeft(2)
-	navSelected = lipgloss.NewStyle().Foreground(accent).Bold(true).PaddingLeft(1).SetString("> ")
-
-	footerStyle = lipgloss.NewStyle().Foreground(subtle).MarginTop(1)
-	panelStyle  = lipgloss.NewStyle().Padding(1, 2)
+	navActive   = lipgloss.NewStyle().Foreground(accent).Bold(true)
+	navInactive = lipgloss.NewStyle().Foreground(white)
 )
 
-const asciiArt = `
-   ___  __ ____  __
-  / _ |/ // __ \/ /
- / __ |/ // /_/ /_/
-/_/ |_/_/ \____(_)
+const nameLogo = `
+ /--\_/\_/=77
+/___\_/ /_//
 `
 
 func viewHome(m Model) string {
-	// Left panel: ASCII art
-	left := panelStyle.Copy().Width(m.width / 2).Render(
-		accentStyle.Render(asciiArt) + "\n" +
-			subtleStyle.Render("  ssh portfolio"),
+	// Stars + name logo
+	stars := accentStyle.Render("*") + "  " + bodyStyle.Render(".") + "\n" +
+		"  " + bodyStyle.Render("*") + "\n"
+
+	logo := accentStyle.Render(nameLogo)
+
+	starBelow := "\n  " + accentStyle.Render("*") + "\n\n"
+
+	// Bio paragraphs
+	bioPrimary := boldStyle.Render(
+		"is a creator & storyteller on the internet,\nbuilding cool products,\ndocumenting life & reflecting on how\ntechnology shapes our humanity.",
 	)
 
-	// Right panel: bio + nav
-	bio := boldStyle.Render("AYO!") + "\n" +
-		subtleStyle.Render("developer. builder. maker of things.") + "\n\n"
+	bioSecondary := "\n\n" + boldStyle.Render(
+		"AYO also works as a builder & maker,\ncreating things people actually use.",
+	)
 
-	nav := ""
+	bioFaded := "\n\n" + subtleStyle.Render(
+		"Rooted in curiosity, obsessed with craft.\nWork sits at the intersection of\nhuman nature, the arts, and technology.",
+	)
+
+	explore := "\n\n" + dimStyle.Render("Explore the directories below ↓")
+
+	// Horizontal nav
+	nav := buildNav(m.navIndex)
+
+	content := stars + logo + starBelow +
+		bioPrimary + bioSecondary + bioFaded + explore +
+		"\n\n" + nav
+
+	main := lipgloss.NewStyle().
+		Width(m.width).
+		Height(m.height - 1).
+		Padding(1, 4).
+		Render(content)
+
+	footer := footerStyle.Width(m.width).Render(
+		"[← → to select · enter to open · q to quit]",
+	)
+
+	return lipgloss.JoinVertical(lipgloss.Left, main, footer)
+}
+
+func buildNav(selected int) string {
+	var parts []string
 	for i, item := range navItems {
-		if i == m.navIndex {
-			nav += navSelected.Render(item) + "\n"
+		if i == selected {
+			parts = append(parts, navActive.Render("+ "+item))
 		} else {
-			nav += navNormal.Render(item) + "\n"
+			parts = append(parts, navInactive.Render(item))
 		}
 	}
-
-	footer := footerStyle.Render("↑/↓ navigate • enter select • q quit")
-
-	right := panelStyle.Copy().Width(m.width / 2).Render(
-		bio + nav + "\n" + footer,
-	)
-
-	return lipgloss.JoinHorizontal(lipgloss.Top, left, right)
+	return strings.Join(parts, "   ")
 }
 
 func viewCreations(m Model) string {
@@ -67,10 +94,10 @@ func viewCreations(m Model) string {
 	body := m.list.View()
 	footer := footerStyle.Render("\nesc go back • q quit")
 
-	return panelStyle.Render(header + body + footer)
+	return lipgloss.NewStyle().Padding(1, 2).Render(header + body + footer)
 }
 
-func viewReflections(m Model) string {
+func viewReflections(_ Model) string {
 	header := boldStyle.Render("Reflections") + "\n" +
 		accentStyle.Render(strings.Repeat("─", 30)) + "\n\n"
 
@@ -80,18 +107,18 @@ func viewReflections(m Model) string {
 		"→ simplicity beats complexity, always",
 	}
 
-	body := subtleStyle.Render(strings.Join(thoughts, "\n"))
+	body := bodyStyle.Render(strings.Join(thoughts, "\n"))
 	footer := footerStyle.Render("\nesc go back • q quit")
 
-	return panelStyle.Render(header + body + footer)
+	return lipgloss.NewStyle().Padding(1, 2).Render(header + body + footer)
 }
 
-func viewContacts(m Model) string {
+func viewContacts(_ Model) string {
 	header := boldStyle.Render("Contacts") + "\n" +
 		accentStyle.Render(strings.Repeat("─", 30)) + "\n\n"
 
 	links := fmt.Sprintf(
-		"%s  github.com/sforslime\n%s  add your twitter/x\n%s  add your email",
+		"%s  https://www.github.com/sforslime\n%s  https://www.x.com/sforslime\n%s  https://www.instagram.com/yourstruly.ayo/",
 		accentStyle.Render("gh"),
 		accentStyle.Render("tw"),
 		accentStyle.Render("@"),
@@ -99,10 +126,10 @@ func viewContacts(m Model) string {
 
 	footer := footerStyle.Render("\nesc go back • q quit")
 
-	return panelStyle.Render(header + links + footer)
+	return lipgloss.NewStyle().Padding(1, 2).Render(header + links + footer)
 }
 
-// project list setup
+// project list
 
 type project struct {
 	title, desc string

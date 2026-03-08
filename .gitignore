@@ -12,6 +12,7 @@ ascii/frames/*.png
 
 # macOS
 .DS_Store
+**/.DS_Store
 
 # Environment / secrets
 .env

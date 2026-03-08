@@ -1,0 +1,18 @@
+# SSH keys — never commit these
+.ssh/
+
+# Go build output
+ssh-portfolio
+*.exe
+
+# ASCII video source (large file)
+ascii/video.mp4
+ascii/*.png
+ascii/frames/*.png
+
+# macOS
+.DS_Store
+
+# Environment / secrets
+.env
+*.env

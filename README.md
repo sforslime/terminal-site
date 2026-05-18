@@ -1,6 +1,6 @@
 # ssh-portfolio
 
-An interactive terminal portfolio accessible over SSH. Visitors connect and land in a full TUI — animated ASCII portrait, bio, navigable sections — no browser required.
+A portfolio you connect to with `ssh`, not a browser. Visitors drop into a Bubble Tea TUI with an animated ASCII self-portrait, navigable Creations and Reflections sections, and contact links — all served as a single Go binary via Wish.
 
 
 https://github.com/user-attachments/assets/89ec764b-4f00-4b45-85f5-39c0b6032708
